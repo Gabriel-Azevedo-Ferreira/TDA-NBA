@@ -1,0 +1,51 @@
+Pre processing
+	Fixar um dataset - Um dataset completo (todas as features e sem erros)
+
+Dim. reduction
+	PCA
+		visualizar : potencialidade da clusterizacao
+					 brincar com posicoes extemas
+					 ? o que acontece em dimensoes maiores
+
+		SPECTRO da pca
+
+		Plotar circulo da pca
+			ANALISAR:	estudar influencia de cada feature
+						estudar se faz sentido usar red de dimensao ao inves de feature selection
+
+	?MDS e outros metodos 
+
+Feature selection
+	Pesquisar metodos unsupervised
+	COMPARAR com as features que ele usou 
+		?(se der diferente, proceder com 2 caminhos em paralelo) 
+	
+Clustering
+	mode-seeking pardigm -> mean shift
+							ou
+							density thresholding (density é mais simples)
+							?OU
+							?0 - degree persistance (td 2)
+	Refazer o que ja tinhamos feito
+	Pesquisar novos algos de clustering
+	obs:
+		Random index PRA CADA algo
+		?silhueta
+		METRICA - escolher a mais adequada.
+				  talvez usar a mesma do mapper
+				  escolher a metrica - ver a do alagapan, mas principalmente qual ou quais têm mais a ver com o data set.
+		Visualizar os resultados
+
+
+exportar dados pra um csv pra usar em R
+Mapper
+	Em R
+	TODOS INSTALAMOS
+	Parametros e filtro...
+
+3ème étape : après avoir fait l'analyse des données à la Alagappin
+  - Évaluer la pertinence de notre modèle
+  	- la stabilité : analyser les voisinages des points
+
+um dos objetivos era achar os mesmos resultados do mapper com algos tradi
+Pra cada "grande topico" (dim red, clustering...), o ou os responsaveis se comprometem a fazer um texto analisando os resultados, na moral sem cartear.
