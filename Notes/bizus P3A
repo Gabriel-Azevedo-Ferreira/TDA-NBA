@@ -1,0 +1,5 @@
+- pca plutôt pra visualizar
+- olhar o spectro do pca
+- mode-seeking pardigm -> mean shift ou density thresholding (density é mais simples)
+- clustering hierarchique (single linkage?)
+- olhar os desenhos e quantitavemente tb

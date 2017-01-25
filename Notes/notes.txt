@@ -1,0 +1,25 @@
+- choisir les variables
+   - random index
+   - générer plusieurs ensembles de choix de paramètres et trouver celui qui maximise la qualité, donnée par random index
+- chercher les slides de Stanford - Alagappin - un deuxième jeu de slides
+- choisir la métrique: Euclidienne pondérée
+- un critère numérique pou la qualité des clusters
+   - sillouette
+- penser à comparer avec les vraies labels: d'abord ploter, puis peut-être faire du supervisé
+
+2ème étape : réproduire les résultats avec Mapper
+- utiliser Mapper
+- il y a Python Mapper et Keppler Mapper
+
+Date: juste après les vacances
+Soutenance:
+  - un rapport de 5 à 10 pages
+ 	  - il faut pas décrire la méthode
+	  - ce qu'on a fait - choix de paramètres
+	  - les résultats
+	  - ce qu'on va faire
+  - une soutenance de 10 minutes, puis une discussion
+
+3ème étape : après avoir fait l'analyse des données à la Alagappin
+  - Évaluer la pertinence de notre modèle
+  	- la stabilité : analyser les voisinages des points
