@@ -1,0 +1,85 @@
+---
+title: "Pca"
+author: "Gabriel Azevedo Ferreira"
+date: "January 24, 2017"
+output: html_document
+---
+
+
+
+```{r setup, include=FALSE}
+rm(list = ls())
+df <- read.csv("Data-Preprocessing/nbaAddingPositions.csv")[,2:30]
+#View(df)
+
+df$numPosic <- df$Posic
+levels(df$numPosic) <- c(1,2,3,4,5)
+summary(df)
+
+library(FactoMineR)
+myPCA <-FactoMineR::PCA(df,quali.sup = c(1,2,29,30))
+
+myPCA$var
+myPCA$quali.sup
+
+
+a <- df[,3:27]
+b <- scale(a)
+a
+cov(b)
+myPCA$eig
+plot.PCA(myPCA,axes = c(1,2), choix = "var",habillage = 29, lim.cos2.var = 0)
+
+#plot.PCA(myPCA,axes = c(1,2), choix = "var",habillage = 29, lim.cos2.var = 0)
+#plot.PCA(myPCA,axes = c(1,2), choix = "ind",habillage = 29,invisible = "quali")
+
+
+#concat = cbind.data.frame(df[,29],myPCA$ind$coord)
+#ellipse.coord = coord.ellipse(concat,bary=T)
+#plot.PCA(myPCA,habillage=29,ellipse=ellipse.coord,cex=0.0001, invisible = "quali")
+
+
+#plot.PCA(myPCA,axes = c(1,2), choix = "ind",habillage = 29,#invisible = "quali", cex = .2)
+
+#?plot.PCA
+
+```
+
+```{r}
+
+library(ggplot2)
+
+newDf <- myPCA$ind$coord
+#plotting dim 1 and 2
+ggplot(data.frame(newDf)) + aes(x = Dim.1, y = Dim.2) + geom_point(col = df$numPosic)
+
+#dim 2 and 3
+ggplot(data.frame(newDf)) + aes(x = Dim.2, y = Dim.3) + geom_point(col = df$numPosic)
+
+#factor analysis
+plot.PCA(myPCA,axes = c(1,2), choix = "var",habillage = 29, lim.cos2.var = 0)
+head(myPCA$eig)
+```
+
+
+
+```{r, include=FALSE}
+#pdf("image.pdf")
+
+#plot.PCA(myPCA,axes = c(1,2), choix = "var",habillage = 29, lim.cos2.var = 0,col.var = "contrib")
+
+#install.packages("devtools")
+#library("devtools")
+#install_github("kassambara/*")
+#library("factoextra")
+
+#fviz_pca_var(myPCA, col.var="contrib")
+
+#dev.off()
+#?plot.PCA
+```
+
+
+
+
+
