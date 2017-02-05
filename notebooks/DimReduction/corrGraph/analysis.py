@@ -54,7 +54,7 @@ def myPCA(df, clusters=None):
 	pca_res = pca.fit_transform(df_norm.values)
 	# Ebouli
 	ebouli = pd.Series(pca.explained_variance_ratio_)
-	ebouli.plot(kind='bar', title="Ebouli des valeurs propres")
+	ebouli.plot(kind='bar', title="Percentage of variances")
 	plt.show()
 	# Circle of correlations
 	# http://stackoverflow.com/a/22996786/1565438
