@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-
 class Point:
     def __init__(self, line):
         stringarray = line.split(' ')
@@ -126,3 +125,7 @@ class HillClimbing:
             sub_points = points[np.where(self.label == label)]
             ax.scatter(sub_points[:, 0], sub_points[:, 1], c=cmap[i])
         plt.show()
+ 
+    
+if __name__ == '__main__':
+    pass
