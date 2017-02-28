@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+from sklearn import decomposition
 
 class Point:
     def __init__(self, line):
@@ -116,7 +117,7 @@ class HillClimbing:
 
         return labels
 
-    def plotClusters(self):
+    def plotClusters2Coordinates(self):
         n_labels = len(np.unique(self.label))
         cmap = sns.color_palette("hls", n_labels)
         points = np.array([point.coords for point in self.cloud])
@@ -125,7 +126,22 @@ class HillClimbing:
             sub_points = points[np.where(self.label == label)]
             ax.scatter(sub_points[:, 0], sub_points[:, 1], c=cmap[i])
         plt.show()
- 
     
-if __name__ == '__main__':
-    pass
+    def pointsToDataframe(self, cloud):
+        rows = []
+        for p in cloud:
+            row = p.coords
+            rows.append(row)
+        return pd.DataFrame(rows)
+            
+    def getData(self):
+        return self.pointsToDataframe(self.cloud)
+    
+    def getLabels(self):
+        unique_labels = np.unique(self.label)
+        n_labels = len(unique_labels)
+        d = {}
+        for i in range(n_labels):
+            d[unique_labels[i]] = i
+        return [d[v] for v in self.label]
+    
