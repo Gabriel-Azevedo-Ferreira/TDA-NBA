@@ -1,0 +1,57 @@
+---
+title: "Installing package + testing"
+output: html_notebook
+---
+
+
+```{r}
+
+### ---------------- Testing code -> installing + example 1 ---------------- ###
+
+install.packages("TDAmapper", dependencies=TRUE)
+install.packages("igraph")
+install.packages("fastcluster")
+
+## the commented part below is not necessary, only if you want latest version 
+## If you use this you might have to set your repositories differently.
+## I did setRepositories(), and chose all the options:
+## (1 2 3 ... 10), but only the CRAN like should work as well
+```
+
+```{r}
+#install.packages("devtools")
+#library(devtools)
+#devtools::install_github("paultpearson/TDAmapper")
+
+#libraries
+library(igraph)
+library(TDAmapper)
+library(fastcluster)
+
+# sample points from two intertwined spirals
+set.seed("1")
+t <- runif(100, min=1, max=6.3) # theta
+X <- data.frame( x = c( t*cos(t), -t*cos(t) ), y = c( t*sin(t), -t*sin(t) ) )
+d <- dist(X, method = "euclidian")
+plot(X[,1], X[,2])
+
+filter <- X[,2] # height projection
+num_intervals <- 10
+percent_overlap <- 50
+num_bins_when_clustering <- 10
+
+m3 <- mapper1D(
+    distance_matrix = d, 
+    filter_values = filter, 
+    # num_intervals = 10, # use default
+    # percent_overlap = 50, # use default
+    # num_bins_when_clustering = 10 # use default
+    )
+
+g3 <- graph.adjacency(m3$adjacency, mode="undirected")
+plot(g3, layout = layout.auto(g3) )
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
