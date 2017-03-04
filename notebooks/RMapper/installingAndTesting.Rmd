@@ -12,6 +12,9 @@ install.packages("TDAmapper", dependencies=TRUE)
 install.packages("igraph")
 install.packages("fastcluster")
 
+?mapper1D
+?mapper2D
+
 ## the commented part below is not necessary, only if you want latest version 
 ## If you use this you might have to set your repositories differently.
 ## I did setRepositories(), and chose all the options:
