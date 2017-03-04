@@ -5,27 +5,26 @@ output: html_notebook
 
 
 ```{r}
-
-### ---------------- Testing code -> installing + example 1 ---------------- ###
+### ----------- Testing code -> installing + example 1 ----------- ###
 
 install.packages("TDAmapper", dependencies=TRUE)
 install.packages("igraph")
 install.packages("fastcluster")
+install.packages("FactoMineR")
+
+# If the following lines don't work, try to change your repositories 
+# I did setRepositories(), and chose all the options:
+# (1 2 3 ... 10), but only selecting the CRAN like should work as well
+install.packages("devtools")
+library(devtools)
+devtools::install_github("paultpearson/TDAmapper")
 
 ?mapper1D
 ?mapper2D
 
-## the commented part below is not necessary, only if you want latest version 
-## If you use this you might have to set your repositories differently.
-## I did setRepositories(), and chose all the options:
-## (1 2 3 ... 10), but only the CRAN like should work as well
 ```
 
 ```{r}
-#install.packages("devtools")
-#library(devtools)
-#devtools::install_github("paultpearson/TDAmapper")
-
 #libraries
 library(igraph)
 library(TDAmapper)
@@ -54,7 +53,3 @@ m3 <- mapper1D(
 g3 <- graph.adjacency(m3$adjacency, mode="undirected")
 plot(g3, layout = layout.auto(g3) )
 ```
-
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
