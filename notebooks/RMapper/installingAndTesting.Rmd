@@ -1,5 +1,5 @@
 ---
-title: "Installing package + testing"
+title: "Installing package + testing  "
 output: html_notebook
 ---
 
@@ -42,7 +42,7 @@ num_bins_when_clustering <- 10
 
 m3 <- mapper1D(
     distance_matrix = d, 
-    filter_values = filter, 
+    filter_values = filter#, 
     # num_intervals = 10, # use default
     # percent_overlap = 50, # use default
     # num_bins_when_clustering = 10 # use default
