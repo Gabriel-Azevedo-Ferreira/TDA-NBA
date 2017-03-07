@@ -2,6 +2,36 @@
 title: "R Notebook"
 output: html_notebook
 ---
+In order to color the plots (and also choose the correct size for each vertex), we will first define the following functions:
+
+```{r}
+range01 <- function(x)(x-min(x))/diff(range(x))
+cRamp <- function(x){
+  cols <- colorRamp(rainbow(7))(range01(x))
+  apply(cols, 1, function(xt)rgb(xt[1], xt[2], xt[3], maxColorValue=255))
+} 
+
+listintolengths <- function(x){
+  a <- c()
+  for(item in x){
+    a <- c(a, length(item))
+  }
+  return(a)
+}
+
+meanforcolor <- function(map, data){
+  allpoints <- data$PTS
+  auxpoints <- map$points_in_vertex
+  answer <- c()
+  for(item in auxpoints){
+    newitem <- unlist(item)
+    num <- mean(allpoints[newitem])
+    answer <- c(answer, num)
+  }
+  return(answer)
+}
+```
+
 First I started with data non normalized by minutes played (the one who gave better results in PCA)
 ```{r}
 library(igraph)
@@ -55,8 +85,10 @@ map    <- mapper2D(
 g <- graph.adjacency(map$adjacency, mode="undirected")
 #TODO
 # learn how to color the graph and decide a way to do it
-plot(g, layout = layout.auto(g))
+V(g)$color <- cRamp(meanforcolor(map,df))
+V(g)$size <- listintolengths(map$points_in_vertex)
 
+plot(g, layout = layout.auto(g), vertex.label = NA)
 ```
 
 
@@ -102,6 +134,9 @@ map    <- mapper2D(
 g <- graph.adjacency(map$adjacency, mode="undirected")
 #TODO
 # learn how to color the graph and decide a way to do it
-plot(g, layout = layout.auto(g))
+V(g)$color <- cRamp(meanforcolor(map,df))
+V(g)$size <- listintolengths(map$points_in_vertex)
+
+plot(g, layout = layout.auto(g), vertex.label = NA)
 ```
 
