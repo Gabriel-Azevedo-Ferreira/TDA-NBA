@@ -30,9 +30,37 @@ meanforcolor <- function(map, data){
   }
   return(answer)
 }
+
+
+## This function computes and plots the mapper graph
+MapperAndPlot <- function(distance_matrix, filter_values,
+                          num_intervals, percent_overlap, num_bins) {
+  map    <- mapper2D(
+              distance_matrix = distance_matrix, 
+              filter_values = filter_values,
+              num_intervals = num_intervals,#20,20 or 30,30
+              percent_overlap = percent_overlap,
+              num_bins_when_clustering = num_bins # Explaining this parameter:
+                # The cluster phase here is a hierarquical cluster. to define the
+                # number of cluster from the hTree, we splite the real interval 
+                # [0,max(height)] into num_bins_... intervals of the same size (that is 
+                # if num_b... is 2, 2 intervals will be created, [0,max(height)/2) and 
+                # [max(height)/2,max(height)]). We them take the clusters from the first 
+                # interval, in deacrising order, that has no points (players) in it.
+        )
+  
+  #plot
+  g <- graph.adjacency(map$adjacency, mode="undirected")
+  
+  V(g)$color <- cRamp(meanforcolor(map,df))
+  V(g)$size <- listintolengths(map$points_in_vertex)
+  
+  plot(g, layout = layout.auto(g), vertex.label = NA)
+}
+
 ```
 
-First I started with data non normalized by minutes played (the one who gave better results in PCA)
+I started with data non normalized by minutes played (the one who gave better results in PCA)
 ```{r}
 library(igraph)
 library(TDAmapper)
@@ -68,16 +96,14 @@ plot.PCA(myPCA,axes = c(1,2),choix = "ind", col.ind = label, label = "ind.sup")
 
 filter <- list(matrix(myPCA$ind$coord[,1]),matrix(myPCA$ind$coord[,2]))
 
-?mapper1D
-
 #cluster_cutoff_at_first_empty_bin(1,1,1)
 
 map    <- mapper2D(
           distance_matrix = d, 
           filter_values = filter,
           num_intervals = c(30,30),#20,20 or 30,30
-          percent_overlap = 50,
-          num_bins_when_clustering = 5 # TODO understand and tune. Has to do with 
+          percent_overlap = 30,
+          num_bins_when_clustering = 4 # TODO understand and tune. Has to do with 
                                        # the cut the hierarchical clustering tree
       )
 
@@ -91,11 +117,41 @@ V(g)$size <- listintolengths(map$points_in_vertex)
 plot(g, layout = layout.auto(g), vertex.label = NA)
 ```
 
+```{r}
+overlaps <- c(5,15,30,40,50,60)  
+num_Intervals_array <- c(10,20,25,30,35,40)
+num_bins_array <- c(2,4,6,8,10,12)
+
+for(overlap in overlaps){
+  # Open file
+  filename <- paste('VarNormalized-NotDivByMin-overlapOf ',overlap,'.pdf', sep = "")
+  pdf(filename)
+  
+  # Create frame
+  par(mfrow = c(length(num_Intervals_array),
+                length(num_bins_array)),
+      mar = c(1, 1, 1, 1)+0.1) # 10 numbers of intervals, 15 choices of num_bins...
+  
+  #plot in the frame
+  for (nint in num_Intervals_array){
+    for(nbins in num_bins_array){
+      MapperAndPlot(distance_matrix = d,
+                    filter_values = filter,
+                    num_intervals = c(nint,nint),
+                    percent_overlap = overlap,
+                    num_bins = nbins
+      )
+    }
+  }
+  #close file
+  dev.off()
+}
+```
 
 Same thing for normilized data (divided per minutes played)
 ```{r}
 #import data
-df <- read.csv("../../Data/NBA_per_minute_complete_with_positions.csv")
+df <- read.csv("../../Data/NBA-data-With-Positions.csv")
 
 # labels
 label <- df$PosicAbbrev
@@ -104,6 +160,7 @@ label <- df$PosicAbbrev
 # features selection -> new smaller dataset -> distance matrix
 chosen_features = c('REB','AST','TOV','STL','BLK','PF','PTS')
 X <- as.matrix(df[chosen_features])
+X <- X/df$MIN ## normalizing according to total time played
 
 normX <- t(t(X)/sqrt(diag(var(X)))) # dividing columns by the variance
                                     # (normalizing without centering)
@@ -117,26 +174,157 @@ plot.PCA(myPCA,axes = c(1,2),choix = "ind", col.ind = label, label = "ind.sup")
 
 filter <- list(matrix(myPCA$ind$coord[,1]),matrix(myPCA$ind$coord[,2]))
 
-?mapper1D
-
 #cluster_cutoff_at_first_empty_bin(1,1,1)
+```
 
+Apply mapper and plot graph
+```{r}
 map    <- mapper2D(
           distance_matrix = d, 
           filter_values = filter,
           num_intervals = c(30,30),#20,20 or 30,30
           percent_overlap = 50,
-          num_bins_when_clustering = 5 # TODO understand and tune. Has to do with 
-                                       # the cut the hierarchical clustering tree
+          num_bins_when_clustering = 5 # Explaining this parameter:
+              # The cluster phase here is a hierarquical cluster. to define the
+              # number of cluster from the hTree, we splite the real interval 
+              # [0,max(height)] into num_bins_... intervals of the same size (that is 
+              # if num_b... is 2, 2 intervals will be created, [0, max(height)/2) and 
+              # [max(height)/2,max(height)]). We them take the clusters from the first 
+              # interval, in deacrising order, that has no points (players) in it.
       )
 
 #plot
 g <- graph.adjacency(map$adjacency, mode="undirected")
-#TODO
-# learn how to color the graph and decide a way to do it
+
 V(g)$color <- cRamp(meanforcolor(map,df))
 V(g)$size <- listintolengths(map$points_in_vertex)
 
 plot(g, layout = layout.auto(g), vertex.label = NA)
+```
+
+Applying Mapper to many different configurations, and outputting them to file
+```{r}
+overlaps <- c(5,15,30,40,50,60)  
+num_Intervals_array <- c(10,20,25,30,35,40)
+num_bins_array <- c(2,4,6,8,10,12)
+
+for(overlap in overlaps){
+  # Open file
+  filename <- paste('VarNormalized-DividedByMin-overlapOf ',overlap,'.pdf', sep = "")
+  pdf(filename)
+  
+  # Create frame
+  par(mfrow = c(length(num_Intervals_array),
+                length(num_bins_array)),
+      mar = c(1, 1, 1, 1)+0.1) # 10 numbers of intervals, 15 choices of num_bins...
+  
+  #plot in the frame
+  for (nint in num_Intervals_array){
+    for(nbins in num_bins_array){
+      MapperAndPlot(distance_matrix = d,
+                    filter_values = filter,
+                    num_intervals = c(nint,nint),
+                    percent_overlap = overlap,
+                    num_bins = nbins
+      )
+    }
+  }
+  #close file
+  dev.off()
+}
+
+```
+
+
+
+
+
+
+Same thing for normilized data (divided per minutes played) and metrics = normalized euclidian
+```{r}
+#import data
+df <- read.csv("../../Data/NBA-data-With-Positions.csv")
+
+# labels
+label <- df$PosicAbbrev
+#levels(label) <- c(5,4,1,3,2)
+
+# features selection -> new smaller dataset -> distance matrix
+chosen_features = c('REB','AST','TOV','STL','BLK','PF','PTS')
+X <- as.matrix(df[chosen_features])
+X <- X/df$MIN ## normalizing according to total time played
+
+normX <- X/apply(X,1,function(x) sqrt(sum(x^2)))
+d <- dist(normX,method = "euclidian")
+#normX <- t(t(X)/sqrt(diag(var(X)))) # dividing columns by the variance
+#                                    # (normalizing without centering)
+#d <- dist(normX,method = "euclidian") # This way I get what Alagapin called
+#                                      # "Variance normalized euclidean distance"
+
+#Taking filter function from PCA
+myPCA <- PCA(normX,graph = F)
+plot.PCA(myPCA,axes = c(1,2),choix = "var")
+plot.PCA(myPCA,axes = c(1,2),choix = "ind", col.ind = label, label = "ind.sup")
+
+filter <- list(matrix(myPCA$ind$coord[,1]),matrix(myPCA$ind$coord[,2]))
+
+#cluster_cutoff_at_first_empty_bin(1,1,1)
+```
+
+Apply mapper and plot graph
+```{r}
+map    <- mapper2D(
+          distance_matrix = d, 
+          filter_values = filter,
+          num_intervals = c(30,30),#20,20 or 30,30
+          percent_overlap = 50,
+          num_bins_when_clustering = 5 # Explaining this parameter:
+              # The cluster phase here is a hierarquical cluster. to define the
+              # number of cluster from the hTree, we splite the real interval 
+              # [0,max(height)] into num_bins_... intervals of the same size (that is 
+              # if num_b... is 2, 2 intervals will be created, [0, max(height)/2) and 
+              # [max(height)/2,max(height)]). We them take the clusters from the first 
+              # interval, in deacrising order, that has no points (players) in it.
+      )
+
+#plot
+g <- graph.adjacency(map$adjacency, mode="undirected")
+
+V(g)$color <- cRamp(meanforcolor(map,df))
+V(g)$size <- listintolengths(map$points_in_vertex)
+
+plot(g, layout = layout.auto(g), vertex.label = NA)
+```
+
+Applying Mapper to many different configurations, and outputting them to file
+```{r}
+
+overlaps <- c(5,15,30,40,50,60)  
+num_Intervals_array <- c(10,20,25,30,35,40)
+num_bins_array <- c(2,4,6,8,10,12)
+for(overlap in overlaps){
+  # Open file
+  filename <- paste('UnitNormalized-DividedByMin-overlapOf ',overlap,'.pdf', sep = "")
+  pdf(filename)
+  
+  # Create frame
+  par(mfrow = c(length(num_Intervals_array),
+                length(num_bins_array)),
+      mar = c(.1, .1, .1, .1)) # 10 numbers of intervals, 15 choices of num_bins...
+  
+  #plot in the frame
+  for (nint in num_Intervals_array){
+    for(nbins in num_bins_array){
+      MapperAndPlot(distance_matrix = d,
+                    filter_values = filter,
+                    num_intervals = c(nint,nint),
+                    percent_overlap = overlap,
+                    num_bins = nbins
+      )
+    }
+  }
+  #close file
+  dev.off()
+}
 ```
 
