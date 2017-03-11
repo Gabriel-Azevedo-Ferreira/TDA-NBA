@@ -19,13 +19,19 @@ listintolengths <- function(x){
   return(a)
 }
 
-meanforcolor <- function(map, data){
+meanforcolor <- function(map, data, coloringAPoint = -1){
   allpoints <- data$PTS
   auxpoints <- map$points_in_vertex
   answer <- c()
   for(item in auxpoints){
     newitem <- unlist(item)
-    num <- mean(allpoints[newitem])
+    if(coloringAPoint == -1 || (sum(item ==coloringAPoint) == 0){
+      num <- mean(allpoints[newitem])
+    }
+    else{
+
+    }
+      
     answer <- c(answer, num)
   }
   return(answer)
@@ -326,5 +332,105 @@ for(overlap in overlaps){
   #close file
   dev.off()
 }
+3
 ```
+
+
+
+
+
+
+
+
+Same thing for all non normilized data and metrics = Variance normalized euclidian
+```{r}
+#import data
+df <- read.csv("../../Data/NBA-data-With-Positions.csv")
+
+# labels
+label <- df$PosicAbbrev
+#levels(label) <- c(5,4,1,3,2)
+
+# features selection -> new smaller dataset -> distance matrix
+chosen_features = c(4:7,9:29,31)
+X <- as.matrix(df[chosen_features])
+#X <- X/df$MIN ## normalizing according to total time played
+
+#normX <- X/apply(X,1,function(x) sqrt(sum(x^2)))
+#d <- dist(normX,method = "euclidian")
+normX <- t(t(X)/sqrt(diag(var(X)))) # dividing columns by the variance
+                                    # (normalizing without centering)
+d <- dist(normX,method = "euclidian") # This way I get what Alagapin called
+                                      # "Variance normalized euclidean distance"
+
+#Taking filter function from PCA
+myPCA <- PCA(normX,graph = F)
+plot.PCA(myPCA,axes = c(1,2),choix = "var")
+plot.PCA(myPCA,axes = c(1,2),choix = "ind", col.ind = label, label = "ind.sup")
+
+filter <- list(matrix(myPCA$ind$coord[,1]),matrix(myPCA$ind$coord[,2]))
+
+#cluster_cutoff_at_first_empty_bin(1,1,1)
+```
+
+Apply mapper and plot graph
+```{r}
+map    <- mapper2D(
+          distance_matrix = d, 
+          filter_values = filter,
+          num_intervals = c(45,45),#20,20 or 30,30
+          percent_overlap = 50,
+          num_bins_when_clustering = 8 # Explaining this parameter:
+              # The cluster phase here is a hierarquical cluster. to define the
+              # number of cluster from the hTree, we splite the real interval 
+              # [0,max(height)] into num_bins_... intervals of the same size (that is 
+              # if num_b... is 2, 2 intervals will be created, [0, max(height)/2) and 
+              # [max(height)/2,max(height)]). We them take the clusters from the first 
+              # interval, in deacrising order, that has no points (players) in it.
+      )
+
+#plot
+g <- graph.adjacency(map$adjacency, mode="undirected")
+
+V(g)$color <- cRamp(meanforcolor(map,df))
+V(g)$size  <- listintolengths(map$points_in_vertex)
+(V(g)$size )
+
+plot(g, layout = layout.auto(g), vertex.label = NA)
+```
+
+Applying Mapper to many different configurations, and outputting them to file
+```{r}
+
+overlaps <- c(5,15,30,40,50,60)  
+num_Intervals_array <- c(10,20,30,35,40,45,50,55,60)
+num_bins_array <- c(2,4,6,8,10,12)
+for(overlap in overlaps){
+  # Open file
+  filename <- paste('AllFeat-VarNormalized-nonDivByMin-overlapOf',overlap,'.pdf', sep = "")
+  pdf(filename)
+  
+  # Create frame
+  par(mfrow = c(length(num_Intervals_array),
+                length(num_bins_array)),
+      mar = c(.1, .1, .1, .1)) # 10 numbers of intervals, 15 choices of num_bins...
+  
+  #plot in the frame
+  for (nint in num_Intervals_array){
+    for(nbins in num_bins_array){
+      MapperAndPlot(distance_matrix = d,
+                    filter_values = filter,
+                    num_intervals = c(nint,nint),
+                    percent_overlap = overlap,
+                    num_bins = nbins
+      )
+    }
+  }
+  #close file
+  dev.off()
+}
+3
+```
+
+
 
