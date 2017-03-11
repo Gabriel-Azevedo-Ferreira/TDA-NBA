@@ -151,7 +151,7 @@ map    <- mapper2D(
           filter_values = filter,
           num_intervals = c(30,30),#20,20 or 30,30
           percent_overlap = 50,
-          num_bins_when_clustering = 30 # Explaining this parameter:
+          num_bins_when_clustering = 20 # Explaining this parameter:
               # The cluster phase here is a hierarquical cluster. to define the
               # number of cluster from the hTree, we splite the real interval 
               # [0,max(height)] into num_bins_... intervals of the same size (that is 
@@ -165,47 +165,16 @@ g <- graph.adjacency(map$adjacency, mode="undirected")
 
 V(g)$color <- cRamp(meanforcolor(map = map,data = df))
 V(g)$size <- listintolengths(map$points_in_vertex, nodeScale = 3)
-pdf("meeee.pdf")
-plot(g, layout = layout.auto(g), vertex.label = NA)
+V(g)$label.cex = .15
+
+tkplot(g, layout = layout.auto(g))
+
+pdf("Alagapan3030-50-20-colorbyPoints.pdf")
+plot(g, layout = layout.auto(g))
 dev.off()
-#plot(g, layout = layout.auto(g), vertex.label.cex = .4)
+
+
 ```
-
-
-
-Applying Mapper to many different configurations, and outputting them to file
-```{r}
-
-overlaps <- c(5,15,30,40,50,60)  
-num_Intervals_array <- c(10,20,25,30,35,40)
-num_bins_array <- c(2,4,6,8,10,12)
-for(overlap in overlaps){
-  # Open file
-  filename <- paste('UnitNormalized-DividedByMin-overlapOf ',overlap,'.pdf', sep = "")
-  pdf(filename)
-  
-  # Create frame
-  par(mfrow = c(length(num_Intervals_array),
-                length(num_bins_array)),
-      mar = c(.1, .1, .1, .1)) # 10 numbers of intervals, 15 choices of num_bins...
-  
-  #plot in the frame
-  for (nint in num_Intervals_array){
-    for(nbins in num_bins_array){
-      MapperAndPlot(distance_matrix = d,
-                    filter_values = filter,
-                    num_intervals = c(nint,nint),
-                    percent_overlap = overlap,
-                    num_bins = nbins
-      )
-    }
-  }
-  #close file
-  dev.off()
-}
-3
-```
-
 
 
 ## trying our data
@@ -270,12 +239,21 @@ g <- graph.adjacency(map$adjacency, mode="undirected")
 V(g)$color <- cRamp(meanforcolor(map,df))
 #V(g)$color <- cRamp(mostFreqcolor(map,labels = label)$mostFreq)
 V(g)$size <- listintolengths(map$points_in_vertex, nodeScale = 2)
-V(g)$label.cex = .1
+V(g)$label.cex = .15
 
-pdf("mee.pdf")
+
+
 tkplot(g, layout = layout.auto(g))
+
+pdf("Seas2015-3030-50-20-colorbyPoints.pdf")
+plot(g, layout = layout.auto(g))
 dev.off()
-#plot(g, layout = layout.auto(g), vertex.label.cex = .4)
+
+V(g)$color <- cRamp(mostFreqcolor(map,labels = label)$mostFreq)
+pdf("Seas2015-3030-50-20-colorbyPosic.pdf")
+plot(g, layout = layout.auto(g))
+dev.off()
+
 
 # create data frames for vertices and edges with the right variable names 
 #MapperNodes <- mapperVertices(map, 1:dim(X)[1])
