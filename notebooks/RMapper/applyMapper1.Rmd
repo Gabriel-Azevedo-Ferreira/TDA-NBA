@@ -19,19 +19,30 @@ listintolengths <- function(x){
   return(a)
 }
 
-meanforcolor <- function(map, data, coloringAPoint = -1){
+#meanforcolor <- function(map, data, coloringAPoint = -1){
+#  allpoints <- data$PTS
+#  auxpoints <- map$points_in_vertex
+#  answer <- c()
+#  for(item in auxpoints){
+#    newitem <- unlist(item)
+#    if(coloringAPoint == -1 || (sum(item ==coloringAPoint) == 0)){
+#      num <- mean(allpoints[newitem])
+#    }
+#    else{
+
+#    }
+      
+#    answer <- c(answer, num)
+#  }
+#  return(answer)
+#}
+meanforcolor <- function(map, data){
   allpoints <- data$PTS
   auxpoints <- map$points_in_vertex
   answer <- c()
   for(item in auxpoints){
     newitem <- unlist(item)
-    if(coloringAPoint == -1 || (sum(item ==coloringAPoint) == 0){
-      num <- mean(allpoints[newitem])
-    }
-    else{
-
-    }
-      
+    num <- mean(allpoints[newitem])
     answer <- c(answer, num)
   }
   return(answer)
@@ -62,6 +73,7 @@ MapperAndPlot <- function(distance_matrix, filter_values,
   V(g)$size <- listintolengths(map$points_in_vertex)
   
   plot(g, layout = layout.auto(g), vertex.label = NA)
+  #plot(g, layout = layout.auto(g), vertex.label.cex = .4)
 }
 
 ```
@@ -121,6 +133,7 @@ V(g)$color <- cRamp(meanforcolor(map,df))
 V(g)$size <- listintolengths(map$points_in_vertex)
 
 plot(g, layout = layout.auto(g), vertex.label = NA)
+#plot(g, layout = layout.auto(g), vertex.label.cex = .4)
 ```
 
 ```{r}
@@ -206,6 +219,7 @@ V(g)$color <- cRamp(meanforcolor(map,df))
 V(g)$size <- listintolengths(map$points_in_vertex)
 
 plot(g, layout = layout.auto(g), vertex.label = NA)
+#plot(g, layout = layout.auto(g), vertex.label.cex = .4)
 ```
 
 Applying Mapper to many different configurations, and outputting them to file
@@ -300,6 +314,7 @@ V(g)$color <- cRamp(meanforcolor(map,df))
 V(g)$size <- listintolengths(map$points_in_vertex)
 
 plot(g, layout = layout.auto(g), vertex.label = NA)
+#plot(g, layout = layout.auto(g), vertex.label.cex = .4)
 ```
 
 Applying Mapper to many different configurations, and outputting them to file
@@ -434,3 +449,18 @@ for(overlap in overlaps){
 
 
 
+This function recieves the cluster label and returns the players that are in that cluster
+```{r}
+clusterintoplayers <- function(data, map, label){
+  players <- map$points_in_vertex[label]
+  answer <- c()
+  allplayers <- data$Player
+  for(player in players){
+    answer <- c(answer, toString(allplayers[player]))
+  }
+  return (answer)
+}
+
+#example:
+clusterintoplayers(df, map, 100)
+```
