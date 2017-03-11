@@ -464,3 +464,5 @@ clusterintoplayers <- function(data, map, label){
 #example:
 clusterintoplayers(df, map, 100)
 ```
+
+
