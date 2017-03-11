@@ -10,7 +10,8 @@ library(TDAmapper)
 library(fastcluster)
 library(FactoMineR)
 library(ggplot2)
-
+#devtools::install_github("christophergandrud/networkD3")
+library(networkD3)
 range01 <- function(x)(x-min(x))/diff(range(x))
 cRamp <- function(x){
   cols <- colorRamp(rainbow(7))(range01(x))
@@ -29,6 +30,7 @@ listintolengths <- function(x,nodeScale = 3){
 #Method: mean of points marked by players in the vertex
 meanforcolor <- function(map, data){
   allpoints <- data$PTS
+  normalCoeff <- 255./max(allpoints)
   auxpoints <- map$points_in_vertex
   answer <- c()
   for(item in auxpoints){
@@ -38,7 +40,26 @@ meanforcolor <- function(map, data){
   }
   return(answer)
 }
-
+#coloring Vertices
+#Method: most frequent position
+mostFreqcolor <- function(map, labels){
+  auxpoints <- map$points_in_vertex
+  answer <- c()
+  answer2 <- c()
+  answer3 <- c()
+  for(item in auxpoints){
+    newitem <- unlist(item)
+    
+    num <- which.max(table(labels[newitem]))
+    num2 <- max(table(labels[newitem]))
+    num3 <- length(newitem)
+    
+    answer <- c(answer, num)
+    answer2 <- c(answer2, num2)
+    answer3 <- c(answer3, num3)
+  }
+  return(list(mostFreq = answer, freq = answer2, numPoints = answer3))
+}
 
 ## This function computes and plots the mapper graph
 MapperAndPlot <- function(distance_matrix, filter_values,
@@ -81,7 +102,7 @@ clusterintoplayers <- function(data, map, label){
 }
 
 #example:
-clusterintoplayers(df, map, 100)
+#clusterintoplayers(df, map, 100)
 ```
 
 trying Alagapans data
@@ -142,7 +163,7 @@ map    <- mapper2D(
 #plotting
 g <- graph.adjacency(map$adjacency, mode="undirected")
 
-V(g)$color <- cRamp(meanforcolor(map,df))
+V(g)$color <- cRamp(meanforcolor(map = map,data = df))
 V(g)$size <- listintolengths(map$points_in_vertex, nodeScale = 3)
 pdf("meeee.pdf")
 plot(g, layout = layout.auto(g), vertex.label = NA)
@@ -247,13 +268,25 @@ map    <- mapper2D(
 g <- graph.adjacency(map$adjacency, mode="undirected")
 
 V(g)$color <- cRamp(meanforcolor(map,df))
+#V(g)$color <- cRamp(mostFreqcolor(map,labels = label)$mostFreq)
 V(g)$size <- listintolengths(map$points_in_vertex, nodeScale = 2)
+V(g)$label.cex = .1
 
 pdf("mee.pdf")
-plot(g, layout = layout.auto(g), vertex.label = NA)
+tkplot(g, layout = layout.auto(g))
 dev.off()
 #plot(g, layout = layout.auto(g), vertex.label.cex = .4)
 
+# create data frames for vertices and edges with the right variable names 
+#MapperNodes <- mapperVertices(map, 1:dim(X)[1])
+#MapperLinks <- mapperEdges(map)
+
+# interactive plot
+#forceNetwork(Nodes = MapperNodes, Links = MapperLinks, 
+ #           Source = "Linksource", Target = "Linktarget",
+  #          Value = "Linkvalue", NodeID = "Nodename",
+   #         Group = "Nodegroup", opacity = 0.8, 
+    #        linkDistance = 10, charge = -1)    
 ```
 
 
