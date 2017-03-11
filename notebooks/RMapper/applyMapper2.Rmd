@@ -224,7 +224,7 @@ map    <- mapper2D(
           filter_values = filter,
           num_intervals = c(30,30),#20,20 or 30,30
           percent_overlap = 50,
-          num_bins_when_clustering = 20 # Explaining this parameter:
+          num_bins_when_clustering = 5 # Explaining this parameter:
               # The cluster phase here is a hierarquical cluster. to define the
               # number of cluster from the hTree, we splite the real interval 
               # [0,max(height)] into num_bins_... intervals of the same size (that is 
@@ -238,33 +238,39 @@ g <- graph.adjacency(map$adjacency, mode="undirected")
 
 V(g)$color <- cRamp(meanforcolor(map,df))
 #V(g)$color <- cRamp(mostFreqcolor(map,labels = label)$mostFreq)
-V(g)$size <- listintolengths(map$points_in_vertex, nodeScale = 2)
+V(g)$size <- listintolengths(map$points_in_vertex, nodeScale = 4)
 V(g)$label.cex = .15
 
 
 
-tkplot(g, layout = layout.auto(g))
+#tkplot(g, layout = layout.auto(g))
 
-pdf("Seas2015-3030-50-20-colorbyPoints.pdf")
+pdf("Seas2015-3030-50-5-colorbyPoints.pdf")
 plot(g, layout = layout.auto(g))
 dev.off()
 
+
 V(g)$color <- cRamp(mostFreqcolor(map,labels = label)$mostFreq)
-pdf("Seas2015-3030-50-20-colorbyPosic.pdf")
+
+#tkplot(g, layout = layout.auto(g))
+ pdf("Seas2015-3030-50-5-colorbyPosic.pdf")
 plot(g, layout = layout.auto(g))
 dev.off()
 
 
 # create data frames for vertices and edges with the right variable names 
-#MapperNodes <- mapperVertices(map, 1:dim(X)[1])
-#MapperLinks <- mapperEdges(map)
+MapperNodes <- mapperVertices(map, 1:dim(X)[1])
+MapperLinks <- mapperEdges(map)
 
 # interactive plot
-#forceNetwork(Nodes = MapperNodes, Links = MapperLinks, 
- #           Source = "Linksource", Target = "Linktarget",
-  #          Value = "Linkvalue", NodeID = "Nodename",
-   #         Group = "Nodegroup", opacity = 0.8, 
-    #        linkDistance = 10, charge = -1)    
+forceNetwork(Nodes = MapperNodes, Links = MapperLinks, 
+            Source = "Linksource", Target = "Linktarget",
+            Value = "Linkvalue", NodeID = "Nodename",
+            Group = "Nodegroup", opacity = 0.8, 
+            linkDistance = 10, charge = -1) 
+
+
+?networkD3
 ```
 
 
