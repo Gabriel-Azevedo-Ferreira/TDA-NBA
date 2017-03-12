@@ -262,15 +262,20 @@ dev.off()
 MapperNodes <- mapperVertices(map, 1:dim(X)[1])
 MapperLinks <- mapperEdges(map)
 
+View(MapperNodes)
+MapperNodes$Nodesize <- 10*MapperNodes$Nodesize
+
 # interactive plot
 forceNetwork(Nodes = MapperNodes, Links = MapperLinks, 
             Source = "Linksource", Target = "Linktarget",
             Value = "Linkvalue", NodeID = "Nodename",
             Group = "Nodegroup", opacity = 0.8, 
-            linkDistance = 10, charge = -1) 
+            linkDistance = 100, charge = -1000,
+            zoom = T) %>%
+                                    saveNetwork(file = 'Net1.html')
 
 
-?networkD3
+?forceNetwork
 ```
 
 
