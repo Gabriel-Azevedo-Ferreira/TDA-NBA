@@ -1,0 +1,116 @@
+
+Basic functions
+```{r}
+library(igraph)
+library(TDAmapper)
+library(fastcluster)
+library(FactoMineR)
+library(ggplot2)
+#devtools::install_github("christophergandrud/networkD3")
+library(networkD3)
+
+range01 <- function(x)(x-min(x))/diff(range(x))
+cRamp <- function(x){
+  cols <- colorRamp(rainbow(7))(range01(x))
+  apply(cols, 1, function(xt)rgb(xt[1], xt[2], xt[3], maxColorValue=255))
+} 
+
+listintolengths <- function(x,nodeScale = 3){
+  a <- c()
+  for(item in x){
+    a <- c(a, (nodeScale)*log(length(item) + 1))
+  }
+  return(a)
+}
+
+#coloring Vertices
+#Method: mean of points marked by players in the vertex
+meanforcolor <- function(map, data){
+  allpoints <- data$PTS
+  normalCoeff <- 255./max(allpoints)
+  auxpoints <- map$points_in_vertex
+  answer <- c()
+  for(item in auxpoints){
+    newitem <- unlist(item)
+    num <- mean(allpoints[newitem])
+    answer <- c(answer, num)
+  }
+  return(answer)
+}
+
+#this is for plotting wiht network3d TODO
+meanforcolor2 <- function(map, data){
+  allpoints <- data$PTS
+  
+  auxpoints <- map$points_in_vertex
+  answer <- c()
+  for(item in auxpoints){
+    newitem <- unlist(item)
+    num <- mean(allpoints[newitem])
+    answer <- c(answer, num)
+  }
+  return(answer)
+}
+#coloring Vertices
+#Method: most frequent position
+mostFreqcolor <- function(map, labels){
+  auxpoints <- map$points_in_vertex
+  answer <- c()
+  answer2 <- c()
+  answer3 <- c()
+  for(item in auxpoints){
+    newitem <- unlist(item)
+    
+    num <- which.max(table(labels[newitem]))
+    num2 <- max(table(labels[newitem]))
+    num3 <- length(newitem)
+    
+    answer <- c(answer, num)
+    answer2 <- c(answer2, num2)
+    answer3 <- c(answer3, num3)
+  }
+  return(list(mostFreq = answer, freq = answer2, numPoints = answer3))
+}
+
+## This function computes and plots the mapper graph
+MapperAndPlot <- function(distance_matrix, filter_values,
+                          num_intervals, percent_overlap, num_bins) {
+  map    <- mapper2D(
+              distance_matrix = distance_matrix, 
+              filter_values = filter_values,
+              num_intervals = num_intervals,#20,20 or 30,30
+              percent_overlap = percent_overlap,
+              num_bins_when_clustering = num_bins # Explaining this parameter:
+                # The cluster phase here is a hierarquical cluster. to define the
+                # number of cluster from the hTree, we splite the real interval 
+                # [0,max(height)] into num_bins_... intervals of the same size (that is 
+                # if num_b... is 2, 2 intervals will be created, [0,max(height)/2) and 
+                # [max(height)/2,max(height)]). We them take the clusters from the first 
+                # interval, in deacrising order, that has no points (players) in it.
+        )
+  
+  #plot
+  g <- graph.adjacency(map$adjacency, mode="undirected")
+  
+  V(g)$color <- cRamp(meanforcolor(map,df))
+  V(g)$size <- listintolengths(map$points_in_vertex)
+  
+  plot(g, layout = layout.auto(g), vertex.label = NA)
+  #plot(g, layout = layout.auto(g), vertex.label.cex = .4)
+}
+
+#This function recieves the cluster label and returns the players that are in that cluster
+clusterintoplayers <- function(data, map, label){
+  players <- map$points_in_vertex[label]
+  answer <- c()
+  allplayers <- data$Player
+  for(player in players){
+    answer <- c(answer, toString(allplayers[player]))
+  }
+  return (answer)
+}
+
+#example:
+#clusterintoplayers(df, map, 100)
+```
+```
