@@ -131,7 +131,7 @@ colorWithPlayer <- function(player,map) {
   for(points in map$points_in_vertex){
     col <- 0
     if(any(points == player)){
-      col <- 1
+      col <- 5
     }
     cWithPlayer <-c(cWithPlayer,col)  
   }
@@ -241,6 +241,10 @@ MapperNodes$Nodegroup <- mostFreqcolor(map = map,labels = label)$mostFreq
 #color according to points
 #colScale <- 'd3.scaleLinear().domain([0, 30.11]).range(["black", "blue"]);'
 #MapperNodes$Nodegroup <- meanforcolor(map = map,data = df)
+
+#color according to a specific player
+colScale <- "d3.scaleOrdinal(d3.schemeCategory20);"
+MapperNodes$Nodegroup <- colorWithPlayer(player = 291,map)
 
 #node names is the name of the players in it
 MapperNodes$Nodename <- numToName(map,df)
