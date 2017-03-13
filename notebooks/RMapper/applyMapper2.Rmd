@@ -12,6 +12,7 @@ library(FactoMineR)
 library(ggplot2)
 #devtools::install_github("christophergandrud/networkD3")
 library(networkD3)
+
 range01 <- function(x)(x-min(x))/diff(range(x))
 cRamp <- function(x){
   cols <- colorRamp(rainbow(7))(range01(x))
@@ -31,6 +32,20 @@ listintolengths <- function(x,nodeScale = 3){
 meanforcolor <- function(map, data){
   allpoints <- data$PTS
   normalCoeff <- 255./max(allpoints)
+  auxpoints <- map$points_in_vertex
+  answer <- c()
+  for(item in auxpoints){
+    newitem <- unlist(item)
+    num <- mean(allpoints[newitem])
+    answer <- c(answer, num)
+  }
+  return(answer)
+}
+
+#this is for plotting wiht network3d
+meanforcolor2 <- function(map, data){
+  allpoints <- data$PTS
+  
   auxpoints <- map$points_in_vertex
   answer <- c()
   for(item in auxpoints){
@@ -263,16 +278,15 @@ MapperNodes <- mapperVertices(map, 1:dim(X)[1])
 MapperLinks <- mapperEdges(map)
 
 View(MapperNodes)
-MapperNodes$Nodesize <- 10*MapperNodes$Nodesize
-
+MapperNodes$Nodesize <- (100)*(MapperNodes$Nodesize)
+unlist(MapperNodes$Nodename[11]) + 3
 # interactive plot
 forceNetwork(Nodes = MapperNodes, Links = MapperLinks, 
             Source = "Linksource", Target = "Linktarget",
             Value = "Linkvalue", NodeID = "Nodename",
-            Group = "Nodegroup", opacity = 0.8, 
-            linkDistance = 100, charge = -1000,
-            zoom = T) %>%
-                                    saveNetwork(file = 'Net1.html')
+            Nodesize = "Nodesize",Group = "Nodegroup",
+            opacity = 0.8, linkDistance = 1, charge = -1000,
+            zoom = T) %>% saveNetwork(file = 'Net1.html')
 
 
 ?forceNetwork

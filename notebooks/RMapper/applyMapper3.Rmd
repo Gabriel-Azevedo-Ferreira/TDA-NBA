@@ -25,7 +25,7 @@ listintolengths <- function(x,nodeScale = 3){
 
 #coloring Vertices
 #Method: mean of points marked by players in the vertex
-meanforcolor <- function(map, data){
+meanforcolor <- function(map, data, player = -1){
   allpoints <- data$PTS
   normalCoeff <- 255./max(allpoints)
   auxpoints <- map$points_in_vertex
@@ -33,6 +33,11 @@ meanforcolor <- function(map, data){
   for(item in auxpoints){
     newitem <- unlist(item)
     num <- mean(allpoints[newitem])
+    
+    if(player >0 && any(item == player)){
+      num <- 50
+    }
+    
     answer <- c(answer, num)
   }
   return(answer)
@@ -53,7 +58,7 @@ meanforcolor2 <- function(map, data){
 }
 #coloring Vertices
 #Method: most frequent position
-mostFreqcolor <- function(map, labels){
+mostFreqcolor <- function(map, labels, player = -1){
   auxpoints <- map$points_in_vertex
   answer <- c()
   answer2 <- c()
@@ -64,6 +69,10 @@ mostFreqcolor <- function(map, labels){
     num <- which.max(table(labels[newitem]))
     num2 <- max(table(labels[newitem]))
     num3 <- length(newitem)
+    
+    if(player >0 && any(item == player)){
+      num <- 6
+    }
     
     answer <- c(answer, num)
     answer2 <- c(answer2, num2)
@@ -126,25 +135,21 @@ numToName <- function(map,df) {
 
 # color every player with 
 colorWithPlayer <- function(player,map) {
-  cWithPlayer <- c()
   
-  for(points in map$points_in_vertex){
-    col <- 0
-    if(any(points == player)){
-      col <- 5
+  aux <- function(line) {
+    if(any(line == player)){
+      return(10)
     }
-    cWithPlayer <-c(cWithPlayer,col)  
+    return(0)
   }
-  return(cWithPlayer)
+  sapply(map$points_in_vertex,aux)
 }
+
 
 
 #example:
 #clusterintoplayers(df, map, 100)
 ```
-
-
-
 
 
 ## trying our data
@@ -155,7 +160,6 @@ df
 # labels
 label <- df$PosicAbbrev
 levels(label) <- c(5,4,1,3,2)
-
 # features selection -> new smaller dataset -> distance matrix
 chosen_features = c('REB','AST','TOV','STL','BLK','PF','PTS')
 X <- as.matrix(df[chosen_features])
@@ -183,79 +187,164 @@ myPCA <- PCA(normX,graph = F)
 plot.PCA(myPCA,axes = c(1,2),choix = "var")
 
 df_red = scale(myPCA$ind$coord)
-ggplot(data.frame(df_red)) + aes(x = Dim.1, y = Dim.2) + geom_point(color = label)
+#ggplot(data.frame(df_red)) + aes(x = Dim.1, y = Dim.2) + geom_point(color = label)
 plot.PCA(myPCA,axes = c(1,2),choix = "ind", col.ind = label, label = "ind.sup")
 
 filter <- list(matrix(df_red[,1]),matrix(df_red[,2]))
 
 #applying mapper
-map    <- mapper2D(
-          distance_matrix = d, 
-          filter_values = filter,
-          num_intervals = c(40,40),#20,20 or 30,30
-          percent_overlap = 50,
-          num_bins_when_clustering = 30 # Explaining this parameter:
-              # The cluster phase here is a hierarquical cluster. to define the
-              # number of cluster from the hTree, we splite the real interval 
-              # [0,max(height)] into num_bins_... intervals of the same size (that is 
-              # if num_b... is 2, 2 intervals will be created, [0, max(height)/2) and 
-              # [max(height)/2,max(height)]). We them take the clusters from the first 
-              # interval, in deacrising order, that has no points (players) in it.
-      )
 
-#plotting
-g <- graph.adjacency(map$adjacency, mode="undirected")
+computingAndPlottingMapper <- function(df, season = "2015", 
+                                       num_int, overlap, num_bins, 
+                                       colorPattern = c("PTS","Posic")) {
+    param <- list(num_int = num_int, overlap = overlap, num_bins = num_bins)
+    map    <- mapper2D(
+              distance_matrix = d, 
+              filter_values = filter,
+              num_intervals = param$num_int,#20,20 or 30,30
+              percent_overlap = param$overlap,
+              num_bins_when_clustering = param$num_bins # Explaining this parameter:
+                  # The cluster phase here is a hierarquical cluster. to define the
+                  # number of cluster from the hTree, we splite the real interval 
+                  # [0,max(height)] into num_bins_... intervals of the same size (that is 
+                  # if num_b... is 2, 2 intervals will be created, [0, max(height)/2) and 
+                  # [max(height)/2,max(height)]). We them take the clusters from the first 
+                  # interval, in deacrising order, that has no points (players) in it.
+          )
+    
+    #plotting
+    #g <- graph.adjacency(map$adjacency, mode="undirected")
+    
+    #V(g)$color <- cRamp(meanforcolor(map,df))
+    ##V(g)$color <- cRamp(mostFreqcolor(map,labels = label)$mostFreq)
+    #V(g)$size <- listintolengths(map$points_in_vertex, nodeScale = 4)
+    #V(g)$label.cex = .15
+    
+    ##tkplot(g, layout = layout.auto(g))
+    #filename <- paste(paste("Seas",season,collapse = ""),
+    #                  paste(param$num_int,collapse = " "),
+    #                  param$overlap, 
+    #                  param$num_bins, 
+    #                  paste("colorBy",colorPattern,".pdf"), 
+    #                  sep = "-")
+    #pdf(filename)
+    #plot(g, layout = layout.auto(g))
+    #dev.off()
+    
+    
+    #V(g)$color <- cRamp(mostFreqcolor(map,labels = label)$mostFreq)
+    
+    ##tkplot(g, layout = layout.auto(g))
+    # pdf("Seas2015-3030-50-5-colorbyPosic.pdf")
+    #plot(g, layout = layout.auto(g))
+    #dev.off()
+    
+    # create data frames for vertices and edges with the right variable names 
+    MapperNodes <- mapperVertices(map, 1:dim(X)[1])
+    MapperLinks <- mapperEdges(map)
+    
+    MapperNodes$Nodesize <- (700)*(MapperNodes$Nodesize)
+    
+    colScale <- "d3.scaleOrdinal(d3.schemeCategory20);"
+    #color according to position
+    if(colorPattern == "Posic"){
+      MapperNodes$Nodegroup <- mostFreqcolor(map = map,labels = label)$mostFreq
+    }
+    #color according to points
+    else if(colorPattern == "PTS"){
+      colScale <- 'd3.scaleLinear().domain([0, 30]).range(["white", "blue"])
+    .interpolate(d3.interpolateHcl);'
+      MapperNodes$Nodegroup <- meanforcolor(map = map,data = df)
+    }
+    #color according to a specific player
+    else if(typeof(colorPattern) == typeof("string")){
+      num <- which(df$Player == colorPattern)
+      if(length(num)>0){
+        #MapperNodes$Nodegroup <- colorWithPlayer(player = num,map)
+        #colScale <- 'd3.scaleLinear().domain([0, 50]).range(["white", "blue"]).interpolate(d3.interpolateHcl);'
+        #MapperNodes$Nodegroup <- meanforcolor(map = map,data = df,player = num)
+        MapperNodes$Nodegroup <- mostFreqcolor(map = map,labels = label,player = num)$mostFreq
+      }
+      else{
+        print("player with wrong name")
+        return(0)
+      }
+    }
+    else if(typeof(colorPattern) == typeof(42)){
+      if(length(num)>0 && num <= length(df$Player)){
+        MapperNodes$Nodegroup <- meanforcolor(map = map,data = df)
+      }
+      else{
+        print("player index out of bounds")
+        return(0)
+      }
+    }
+    else{
+      return(0)
+    }
+    #node names is the name of the players in it
+    MapperNodes$Nodename <- numToName(map,df)
+    
+    filename <- paste(paste("Seas",season,collapse = "_",sep = "_"),
+                      paste(param$num_int,collapse ="_",sep = "_"),
+                      param$overlap, 
+                      param$num_bins, 
+                      paste("colorBy",colorPattern,".html", sep = "",collapse = ""), 
+                      sep = "-")
+    
+    # interactive plot
+    forceNetwork(Nodes = MapperNodes, Links = MapperLinks, 
+                Source = "Linksource", Target = "Linktarget",
+                Value = "Linkvalue", NodeID = "Nodename",
+                Nodesize = "Nodesize",Group = "Nodegroup", linkWidth = 5,
+                opacity = 0.8, linkDistance =  JS('function(){ d3.select( "body" ).style( "background-color" , "#000000"); return 50;}'), charge = -1000,
+                fontSize = 50,
+                colourScale = JS(colScale), zoom = T) %>% saveNetwork(file = filename)
+}
 
-V(g)$color <- cRamp(meanforcolor(map,df))
-#V(g)$color <- cRamp(mostFreqcolor(map,labels = label)$mostFreq)
-V(g)$size <- listintolengths(map$points_in_vertex, nodeScale = 4)
-V(g)$label.cex = .15
+computingAndPlottingMapper(df = df,season = "2015",
+                           num_int = c(30,30), 
+                           overlap = 50, 
+                           num_bins = 20,
+                           colorPattern = "Posic")
+
+computingAndPlottingMapper(df = df,season = "2015",
+                           num_int = c(30,30), 
+                           overlap = 50, 
+                           num_bins = 20,
+                           colorPattern = "LaMarcus Aldridge")
+
+computingAndPlottingMapper(df = df,season = "2015",
+                           num_int = c(40,40), 
+                           overlap = 50, 
+                           num_bins = 20,
+                           colorPattern = "Posic")
+
+computingAndPlottingMapper(df = df,season = "2015",
+                           num_int = c(30,30), 
+                           overlap = 50, 
+                           num_bins = 30,
+                           colorPattern = "Posic")
+
+computingAndPlottingMapper(df = df,season = "2015",
+                           num_int = c(40,40), 
+                           overlap = 50, 
+                           num_bins = 30,
+                           colorPattern = "Posic")
 
 
+computingAndPlottingMapper(df = df,season = "2015",
+                           num_int = c(30,30), 
+                           overlap = 50, 
+                           num_bins = 20,
+                           colorPattern = "PTS")
 
-#tkplot(g, layout = layout.auto(g))
-
-pdf("Seas2015-3030-50-5-colorbyPoints.pdf")
-plot(g, layout = layout.auto(g))
-dev.off()
-
-
-V(g)$color <- cRamp(mostFreqcolor(map,labels = label)$mostFreq)
-
-#tkplot(g, layout = layout.auto(g))
- pdf("Seas2015-3030-50-5-colorbyPosic.pdf")
-plot(g, layout = layout.auto(g))
-dev.off()
-
-
-# create data frames for vertices and edges with the right variable names 
-MapperNodes <- mapperVertices(map, 1:dim(X)[1])
-MapperLinks <- mapperEdges(map)
-
-MapperNodes$Nodesize <- (150)*(MapperNodes$Nodesize)
-
-#color according to position
-colScale <- "d3.scaleOrdinal(d3.schemeCategory20);"
-MapperNodes$Nodegroup <- mostFreqcolor(map = map,labels = label)$mostFreq
-
-#color according to points
-#colScale <- 'd3.scaleLinear().domain([0, 30.11]).range(["black", "blue"]);'
-#MapperNodes$Nodegroup <- meanforcolor(map = map,data = df)
-
-#color according to a specific player
-colScale <- "d3.scaleOrdinal(d3.schemeCategory20);"
-MapperNodes$Nodegroup <- colorWithPlayer(player = 291,map)
-
-#node names is the name of the players in it
-MapperNodes$Nodename <- numToName(map,df)
-
-# interactive plot
-forceNetwork(Nodes = MapperNodes, Links = MapperLinks, 
-            Source = "Linksource", Target = "Linktarget",
-            Value = "Linkvalue", NodeID = "Nodename",
-            Nodesize = "Nodesize",Group = "Nodegroup", linkWidth = 5,
-            opacity = 0.8, linkDistance = 1, charge = -1000,
-            fontSize = 50,
-            colourScale = JS(colScale), zoom = T) %>% saveNetwork(file = 'Net1.html')
+computingAndPlottingMapper(df = df,season = "2015",
+                           num_int = c(40,40), 
+                           overlap = 50, 
+                           num_bins = 30,
+                           colorPattern = "PTS")
 
 ```
+
+
