@@ -55,10 +55,9 @@ The result of applying the algorithm is shown below.
 
 ![alt text](Notes/Images_Readme/mapper.png "Mapper")
 
-This result shows a clear distiction on the players positions in space:
-TODO describe.
+This result shows a clear distiction on the players positions in space. The different colors represent the different playing positions, which gradually changed. The positions noted are the ones proposed by M. Alagapan.
 
-However the results from the paper (based on NBA 2013 season) were not totally seen in the 2015 season. Notably, the new positions proposed by M. Alagapan were present in 2015 season. This seems to indicate that the particular scenario in terms playing styles changed from 2013 to 2015, and the different classification proposed by M. Alagapan might not a stable classification strategy.
+The results from the paper (based on NBA 2013 season) were not totally mapped into the 2015 season, as some of the positions proposed on Alagapan's work were not identifiable. This seems to indicate that the particular scenario, in terms playing styles, changed from 2013 to 2015, and the different classification proposed by M. Alagapan might not be stable.
 
 
 
